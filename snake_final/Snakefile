@@ -1,0 +1,60 @@
+configfile: "config.yaml"
+
+rule all:
+    input:
+        "results/top_10_words.txt"
+
+rule download_book:
+    output:
+        "data/book.txt"
+    params:
+        url = config["book_url"]
+    shell:
+        "curl -L {params.url} -o {output} && echo '✅ Книга скачана'"
+
+rule count_words:
+    input:
+        "data/book.txt"
+    output:
+        "results/word_counts.tsv"
+    run:
+        # Встроенный Python код
+        import re
+        from collections import Counter
+        import os
+        
+        print(f"📖 Обработка: {input[0]}")
+        
+        with open(input[0], 'r', encoding='utf-8') as f:
+            text = f.read()
+        
+        # Находим слова
+        words = re.findall(r'[a-zA-Z]+', text.lower())
+        print(f"📊 Найдено слов: {len(words):,}")
+        
+        # Считаем
+        counts = Counter(words)
+        print(f"🔢 Уникальных слов: {len(counts):,}")
+        
+        # Сохраняем
+        os.makedirs(os.path.dirname(output[0]), exist_ok=True)
+        
+        with open(output[0], 'w') as f:
+            f.write("word\tcount\n")
+            for word, count in counts.most_common():
+                f.write(f"{word}\t{count}\n")
+        
+        print(f"✅ Результат: {output[0]}")
+        
+        # Покажем топ-5
+        print("\n🏆 Топ-5 слов:")
+        for i, (word, count) in enumerate(counts.most_common(5), 1):
+            print(f"{i}. {word}: {count:,}")
+
+rule top10:
+    input:
+        "results/word_counts.tsv"
+    output:
+        "results/top_10_words.txt"
+    shell:
+        "head -n 11 {input} > {output} && echo '✅ Топ-10 создан'"
