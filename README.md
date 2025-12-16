@@ -13,10 +13,12 @@ https://github.com/valtunina/forVohmin
 3. В открывшемся терминале выполните:
    pip install snakemake
    snakemake --cores 1
+
 ###Вариант 2: Через Docker
 git clone https://github.com/valtunina/forVohmin.git
 cd forVohmin
 docker run --rm -v "$(pwd):/work" -w /work snakemake/snakemake snakemake --cores 1
+
 ###Вариант 3: Локально с установленным Snakemake
 git clone https://github.com/valtunina/forVohmin.git
 cd forVohmin
